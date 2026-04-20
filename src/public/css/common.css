@@ -1,11 +1,17 @@
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
 .header {
     background: #000;
+    width: 100%;
 }
 
 .header__inner {
-    margin: 0 auto;
-    padding: 20px 15px;
-    max-width: 1230px;
+    /* 左右の余白だけ可変にし、最大値を制限 */
+    margin: 0;
+    padding: 10px 20px;
 }
 
 .header-utilities {
@@ -15,31 +21,75 @@
 }
 
 .header__logo {
-    color: #fff;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 24px;
+    display: flex;
+    align-items: center;
 }
 
-.header-utilities nav {
-    width: 18%;
+.header__logo img {
+    /* ロゴのサイズは固定、または最小・最大を指定 */
+    width: 200px;
+    height: auto;
+    display: block;
 }
 
 .header-nav {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    /* 間隔を画面幅に合わせる(ここだけclampを残す) */
+    gap: clamp(20px, 4vw, 50px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
-.header-nav__link {
+.header-nav__link,
+.header-nav__button {
     color: #fff;
     text-decoration: none;
+    font-size: 20px;
+    white-space: nowrap;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.3s;
 }
 
-.header-nav__button {
-    border: none;
-    background: transparent;
-    color: #fff;
-    font-size: 16px;
-    cursor: pointer;
+.header-nav__link:hover,
+.header-nav__button:hover {
+    opacity: 0.7;
+}
+
+/* ログイン/ログアウトなどの強調ボタン */
+.header-nav__link.sale {
+    background-color: #ffffff;
+    color: #000000;
+    padding: 0.4em 1.2em;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+/* レスポンシブ：タブレット以下 */
+@media screen and (max-width: 768px) {
+    .header__inner {
+        padding: 15px 20px;
+    }
+
+    .header__logo img {
+        width: 150px;
+        /* 少し小さく */
+    }
+
+    .header-nav__link,
+    .header-nav__button {
+        font-size: 16px;
+        /* スマホでも視認性を保つ最小サイズ */
+    }
+}
+
+/* レスポンシブ：スマホ（超小型） */
+@media screen and (max-width: 480px) {
+    .header-nav {
+        gap: 15px;
+        /* 要素同士をギュッと寄せる */
+    }
 }

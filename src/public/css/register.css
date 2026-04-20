@@ -1,60 +1,107 @@
 .register-form__content {
     margin: 0 auto;
-    padding: 30px 15px;
+    padding: clamp(20px, 5vw, 30px) 15px;
     max-width: 1230px;
+    box-sizing: border-box;
 }
 
 .register-form__heading {
-    margin-bottom: 20px;
+    margin-bottom: clamp(20px, 5vw, 40px);
     text-align: center;
+}
+
+.register-form__heading h2 {
+    font-size: clamp(24px, 4vw, 32px);
+    margin: 0;
 }
 
 .form {
     margin: 0 auto;
-    width: 25%;
+    width: clamp(320px, 45%, 600px);
     text-align: center;
 }
 
+@media screen and (max-width: 1024px) {
+    .form {
+        width: 70%;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .form {
+        width: 100%;
+    }
+}
+
 .form__group {
-    margin-bottom: 5px;
+    margin-bottom: 15px;
 }
 
 .form__group-title {
     text-align: left;
+    margin-bottom: 5px;
+}
+
+.form__label--item {
+    font-weight: bold;
 }
 
 .form__error {
-    height: 20px;
+    min-height: 20px;
     color: #ff0000;
     text-align: left;
+    font-size: 14px;
 }
 
 .form__input--text input {
     padding: 10px;
     width: 100%;
-    height: 40px;
+    height: 45px;
     border: 1px solid #ddd;
     border-radius: 3px;
-
     appearance: none;
+    box-sizing: border-box;
+    font-size: 16px;
+    outline: none;
+}
+
+.form__input--text input:focus {
+    border-color: #FF5555;
 }
 
 .form__button {
-    margin-top: 20px;
+    margin-top: 30px;
 }
 
 .form__button-submit {
     padding: 10px;
-    width: 30%;
+    width: 100%;
     height: 50px;
     border: none;
     border-radius: 3px;
-    background: #000;
+    background: #000000;
     color: #fff;
     cursor: pointer;
+    font-weight: bold;
+    font-size: 18px;
+    transition: opacity 0.3s;
+}
+
+.form__button-submit:hover {
+    opacity: 0.8;
 }
 
 .login__link {
     margin-top: 20px;
     text-align: center;
+}
+
+.login__button-submit {
+    color: #0073CC;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.login__button-submit:hover {
+    text-decoration: underline;
 }

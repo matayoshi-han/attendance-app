@@ -1,0 +1,92 @@
+html {
+    background-color: #F0EFF2;
+}
+
+body {
+    margin: 0;
+    /* 余計な隙間を消す */
+}
+
+main {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* 勤務状態 */
+.work-status {
+    display: inline-block;
+    width: 100px;
+    line-height: 40px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #696969;
+    background-color: #C8C8C8;
+    border-radius: 50px;
+    margin-bottom: 10px;
+}
+
+/* 日付 */
+.datetime {
+    font-size: 40px;
+    font-weight: 400;
+    color: #000000;
+    margin-bottom: 5px;
+}
+
+/* 時計 */
+.clock {
+    font-size: 80px;
+    font-weight: 700;
+    color: #000000;
+    margin: 20px 0 40px 0;
+    letter-spacing: 0.05em;
+}
+
+/* ボタン */
+.attendance-button {
+    background-color: #000000;
+    color: white;
+    border: none;
+    padding: 15px 80px;
+    font-size: 32px;
+    font-weight: 700;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.attendance-button:hover {
+    transform: translateY(-2px);
+}
+
+
+/* ボタンを横に並べるためのコンテナ */
+.button-group {
+    margin-top: 20px;
+}
+
+
+.break-button {
+    background-color: #FFFFFF;
+    color: #000000;
+}
+
+.finish-button {
+    background-color: #000000;
+}
+
+.attendance-button:active {
+    transform: translateY(0);
+}
+
+.finished-message {
+    font-size: 26px;
+    font-weight: 700;
+    color: #000000;
+}

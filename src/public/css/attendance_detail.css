@@ -1,0 +1,138 @@
+.detail-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.detail-table th {
+    width: 250px;
+    padding: 25px 20px;
+    background-color: #fff;
+    text-align: left;
+    color: #000;
+}
+
+.detail-table td {
+    padding: 25px 20px;
+    background-color: #fff;
+    text-align: left;
+}
+
+.name-text,
+.date-year,
+.date-monthday,
+.time-input-field,
+.range-separator {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: #000 !important;
+}
+
+.name-display,
+.date-year,
+.date-monthday,
+.time-input-field {
+    width: 200px !important;
+    display: inline-block !important;
+    text-align: center !important;
+    flex-shrink: 0;
+}
+
+.time-input-field {
+    padding: 8px 0;
+    border: 1px solid #C8C8C8;
+    border-radius: 4px;
+    background-color: #fff;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.time-input-field:focus {
+    border-color: #000;
+}
+
+.date-display,
+.time-inputs {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.range-separator {
+    width: 50px;
+    display: inline-block;
+    text-align: center;
+}
+
+.remarks-area {
+    width: 100%;
+    max-width: 600px;
+    padding: 10px;
+    border: 1px solid #C8C8C8;
+    border-radius: 4px;
+    font-size: 18px;
+    font-weight: 700;
+    resize: vertical;
+}
+
+.form-actions {
+    margin-top: 50px;
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 20px;
+}
+
+.attendance-button,
+.status-badge {
+    width: clamp(130px, 30%, 250px);
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    border-radius: 10px;
+    text-align: center;
+    box-sizing: border-box;
+    text-decoration: none;
+}
+
+.attendance-button {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.status-badge {
+    color: #696969;
+    background-color: #C8C8C8;
+}
+
+.attendance-button:hover {
+    background-color: #333;
+    transform: translateY(-2px);
+}
+
+.lock-message {
+    font-size: 18px;
+    font-weight: 700;
+    color: #FF000080;
+    margin: 0;
+    padding: 15px 0;
+    text-align: right;
+}
+
+@media screen and (max-width: 480px) {
+    .form-actions {
+        justify-content: center;
+        padding: 0;
+    }
+
+    .attendance-button,
+    .status-badge {
+        width: 100%;
+        max-width: 300px;
+    }
+}

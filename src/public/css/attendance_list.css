@@ -1,0 +1,141 @@
+/* 全体の背景（打刻画面と統一） */
+html {
+    background-color: #F0EFF2;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 50px auto;
+    padding: 0 40px;
+    text-align: center;
+}
+
+.title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 40px;
+    text-align: left;
+    padding-left: 15px;
+    border-left: 6px solid #000;
+    line-height: 1.1;
+}
+
+/* 月切り替えナビゲーション */
+.month-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    background-color: #fff;
+    padding: 15px 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* 画像と文字の間隔 */
+    font-size: 16px;
+    font-weight: 700;
+    color: #000;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+.nav-btn:hover {
+    opacity: 0.6;
+}
+
+/* 矢印アイコンのサイズ調整 */
+.arrow-left,
+.arrow-right {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+/* 翌月の矢印だけ180度回転させて右向きにする */
+.arrow-right {
+    transform: rotate(180deg);
+}
+
+.month-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 24px;
+    font-weight: 700;
+    color: #000;
+    flex-grow: 1;
+}
+
+.calendar-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+/* --- テーブルデザインの変更点 --- */
+
+.table {
+    width: 100%;
+    background-color: #fff;
+    border-collapse: collapse;
+    /* 行を繋げるために必須 */
+    border-radius: 10px;
+    /* 角を丸める */
+    overflow: hidden;
+}
+
+.table th,
+.table td {
+    padding: 20px;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    /* デフォルトのborderは一度リセット */
+    border: none;
+}
+
+/* ヘッダーの調整 */
+.table thead th {
+    color: #737373;
+    background-color: #fff;
+    border-bottom: 2px solid #E1E1E1;
+    /* ヘッダー下の太めの線 */
+}
+
+/* 各行の間に薄い線を入れる */
+.table tbody tr {
+    border-bottom: 2px solid #E1E1E1;
+}
+
+/* 最後の行の線は消して角丸を維持 */
+.table tbody tr:last-child {
+    border-bottom: none;
+}
+
+/* データ行の文字色 */
+.table td {
+    color: #737373;
+}
+
+/* 詳細ボタン（文字色を黒にし、下線を消して調整） */
+.btn-primary {
+    display: inline-block;
+    color: #000000 !important;
+    /* 黒文字 */
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 5px 10px;
+    transition: opacity 0.3s;
+}
+
+.btn-primary:hover {
+    opacity: 0.6;
+}
