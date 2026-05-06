@@ -1,8 +1,8 @@
-# coachtech-freemarket（フリマアプリ）
+# attendance-app（勤怠管理アプリ）
 
 ## 環境構築
 **Dockerビルド**
-1. `git clone git@github.com:matayoshi-han/coachtech-freemarket.git`
+1. `git@github.com:matayoshi-han/attendance-app.git`
 2. DockerDesktopアプリを立ち上げる
 3. `docker-compose up -d --build`
 
