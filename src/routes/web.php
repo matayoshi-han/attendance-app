@@ -35,15 +35,17 @@ Route::middleware('auth', 'verified')->group(function () {
     Route::get('/stamp_correction_request/list', [AttendanceController::class, 'correctionList'])->name('correction.list');
 
 
-    Route::post('/attendance/start', [AttendanceController::class, 'start'])
-        ->name('attendance.start');
+    Route::post('/attendance/start', [AttendanceController::class, 'start'])->name('attendance.start');
     Route::post('/attendance/end', [AttendanceController::class, 'end'])->name('attendance.end');
     Route::post('/attendance/break-start', [AttendanceController::class, 'breakStart'])->name('attendance.break-start');
     Route::post('/attendance/break-end', [AttendanceController::class, 'breakEnd'])->name('attendance.break-end');
 
     Route::get('/admin/attendance/list', [AttendanceController::class, 'adminIndexList'])->name('admin.attendance.list');
+    Route::get('admin/attendance/{id}', [AttendanceController::class, 'showEdit'])->name('admin.attendance.edit');
+    Route::post('admin/attendance/update/{id}', [AttendanceController::class, 'update'])->name('admin.attendance.update');
     Route::get('/attendance/export', [AttendanceController::class, 'export'])->name('attendance.export');
-    Route::get('/admin/staff', [AttendanceController::class, 'userList'])->name('admin.user.list');
+    Route::get('/admin/staff/list', [AttendanceController::class, 'userList'])->name('admin.user.list');
+    Route::get('/admin/attendance/staff/{user_id}', [AttendanceController::class, 'adminStaffAttendanceList'])->name('admin.attendance.staff');
     Route::post('/stamp_correction_approval/approve/{id}', [AttendanceController::class, 'approveCorrection'])->name('attendance.approve');
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

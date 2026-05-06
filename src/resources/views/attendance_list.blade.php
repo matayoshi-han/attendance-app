@@ -7,17 +7,26 @@
 @section('content')
 <div class="container">
     <h1 class="title">
-        @if(Auth::user()->role === 'admin' && isset($targetUser))
-        {{ $targetUser->name }}の勤怠一覧
+        @if(isset($targetUser) && Auth::user()->role === 'admin')
+        {{ $targetUser->name }}さんの勤怠一覧
         @else
         勤怠一覧
         @endif
     </h1>
 
     <div class="month-navigation">
-        <a href="{{ route('attendance.list', ['month' => $prevMonth, 'user_id' => $userId]) }}" class="nav-btn"><img src="{{ asset('images/arrow.png') }}" alt="前月" class="arrow-left"><span>前月</span></a>
-        <span class="month-display"><img src="{{ asset('images/calendar-icon.png') }}" alt="カレンダー" class="calendar-icon">{{ $currentMonth->format('Y/m') }}</span>
-        <a href="{{ route('attendance.list', ['month' => $nextMonth, 'user_id' => $userId]) }}" class="nav-btn"><span>翌月</span><img src="{{ asset('images/arrow.png') }}" alt="次月" class="arrow-right"></a>
+        <a href="{{ route('attendance.list', ['month' => $prevDate, 'user_id' => $userId]) }}" class="nav-btn">
+            <img src="{{ asset('images/arrow.png') }}" alt="前月" class="arrow-left"><span>前月</span>
+        </a>
+
+        <span class="month-display">
+            <img src="{{ asset('images/calendar-icon.png') }}" alt="カレンダー" class="calendar-icon">
+            {{ $currentMonth->format('Y/m') }}
+        </span>
+
+        <a href="{{ route('attendance.list', ['month' => $nextDate, 'user_id' => $userId]) }}" class="nav-btn">
+            <span>翌月</span><img src="{{ asset('images/arrow.png') }}" alt="次月" class="arrow-right">
+        </a>
     </div>
 
     <table class="table">
@@ -45,7 +54,11 @@
                 <td>{{ $attendance->total_rest_time ? substr($attendance->total_rest_time, 0, 5) : '-' }}</td>
                 <td>{{ $attendance->total_work_time ? substr($attendance->total_work_time, 0, 5) : '-' }}</td>
                 <td>
-                    <a href="{{ route('attendance.show', $attendance->id) }}" class="btn-primary">詳細</a>
+                    @if(Auth::user()->role === 'admin')
+                    <a href="{{ route('admin.attendance.edit', ['id' => $attendance->id]) }}">詳細</a>
+                    @else
+                    <a href="{{ route('attendance.show', ['id' => $attendance->id]) }}">詳細</a>
+                    @endif
                 </td>
             </tr>
             @endforeach

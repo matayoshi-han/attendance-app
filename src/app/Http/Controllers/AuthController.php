@@ -58,7 +58,7 @@ class AuthController extends Controller
         }
 
         return back()->withErrors([
-            'login_error' => 'ログイン情報が登録されていません。',
+            'login_error' => 'ログイン情報が登録されていません',
         ])->onlyInput('email');
     }
 
@@ -101,9 +101,9 @@ class AuthController extends Controller
             }
 
             Auth::logout();
-            return back()->withErrors(['login_error' => '管理者以外のユーザーはログインできません。']);
+            return back()->withErrors(['login_error' => '管理者以外のユーザーはログインできません']);
         }
 
-        return back()->withErrors(['login_error' => 'ログイン情報が登録されていません。']);
+        return back()->withErrors(['login_error' => 'ログイン情報が登録されていません']);
     }
 }

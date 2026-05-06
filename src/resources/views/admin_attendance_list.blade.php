@@ -6,7 +6,7 @@
 
 @section('content')
 <div class="container">
-    <h1 class="title">勤怠一覧</h1>
+    <h1 class="title">{{ \Carbon\Carbon::parse($currentDate)->format('Y年n月j日') }}の勤怠一覧</h1>
 
     <div class="month-navigation">
         <a href="{{ route('admin.attendance.list', ['date' => $prevDate]) }}" class="nav-btn">
@@ -19,7 +19,7 @@
         </span>
 
         <a href="{{ route('admin.attendance.list', ['date' => $nextDate]) }}" class="nav-btn">
-            <span>翌日</span><img src="{{ asset('images/arrow.png') }}" alt="次日" class="arrow-right">
+            <span>翌日</span><img src="{{ asset('images/arrow.png') }}" alt="翌日" class="arrow-right">
         </a>
     </div>
 
@@ -43,7 +43,7 @@
                 <td>{{ $attendance->total_rest_time ? substr($attendance->total_rest_time, 0, 5) : '-' }}</td>
                 <td>{{ $attendance->total_work_time ? substr($attendance->total_work_time, 0, 5) : '-' }}</td>
                 <td>
-                    <a href="{{ route('attendance.show', $attendance->id) }}" class="btn-primary">詳細</a>
+                    <a href="{{ route('admin.attendance.edit', ['id' => $attendance->id]) }}">詳細</a>
                 </td>
             </tr>
             @endforeach

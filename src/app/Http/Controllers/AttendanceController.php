@@ -115,17 +115,15 @@ class AttendanceController extends Controller
 
     public function indexList(Request $request)
     {
-        // クエリパラメータから月を取得、なければ今月
         $monthParam = $request->query('month', now()->format('Y-m'));
-
-        // 管理者でuser_idが指定されている場合はその人を、そうでなければ自分を対象にする
         $userId = $request->input('user_id') ?? Auth::id();
         $targetUser = User::find($userId);
 
-        // Carbonインスタンスを作成
         $currentMonth = \Carbon\Carbon::parse($monthParam);
-        $prevMonth = $currentMonth->copy()->subMonth()->format('Y-m');
-        $nextMonth = $currentMonth->copy()->addMonth()->format('Y-m');
+
+        // 変数名をBladeに合わせて $prevDate / $nextDate に変更
+        $prevDate = $currentMonth->copy()->subMonth()->format('Y-m');
+        $nextDate = $currentMonth->copy()->addMonth()->format('Y-m');
 
         $attendances = Attendance::with('rests')
             ->where('user_id', $userId)
@@ -133,7 +131,6 @@ class AttendanceController extends Controller
             ->orderBy('work_date', 'asc')
             ->get();
 
-        // 時間計算ロジック
         foreach ($attendances as $attendance) {
             $totalRestSeconds = 0;
             foreach ($attendance->rests as $rest) {
@@ -152,8 +149,91 @@ class AttendanceController extends Controller
             }
         }
 
-        return view('attendance_list', compact('attendances', 'currentMonth', 'prevMonth', 'nextMonth', 'userId'));
+        // compactの中身をBladeの変数名に合わせる
+        return view('attendance_list', compact(
+            'attendances',
+            'currentMonth',
+            'prevDate',
+            'nextDate',
+            'userId',
+            'targetUser'
+        ));
     }
+
+
+    public function adminAttendanceList(Request $request)
+    {
+        $dateParam = $request->query('date', Carbon::now()->toDateString());
+        $currentDate = Carbon::parse($dateParam);
+
+        $prevDate = $currentDate->copy()->subDay()->format('Y-m-d');
+        $nextDate = $currentDate->copy()->addDay()->format('Y-m-d');
+
+        // 「$attendances」という名前で全従業員分を取得（UserをEager Load）
+        $attendances = Attendance::with('user')
+            ->whereDate('work_date', $currentDate)
+            ->paginate(10);
+
+        return view('admin_attendance_list', [ // 全員用の一覧画面を指定
+            'attendances' => $attendances,
+            'currentDate' => $currentDate->toDateString(),
+            'prevDate'    => $prevDate,
+            'nextDate'    => $nextDate,
+        ]);
+    }
+
+
+
+    public function adminStaffAttendanceList(Request $request, $user_id)
+    {
+        $targetUser = User::findOrFail($user_id);
+
+        // 1. 対象の月を取得（デフォルトは今月）
+        $monthParam = $request->query('month', now()->format('Y-m'));
+        $currentMonth = \Carbon\Carbon::parse($monthParam);
+
+        // 2. 前月・翌月の計算（変数名はBladeに合わせて prevDate / nextDate）
+        $prevDate = $currentMonth->copy()->subMonth()->format('Y-m');
+        $nextDate = $currentMonth->copy()->addMonth()->format('Y-m');
+
+        // 3. そのユーザーの指定された月の勤怠データをすべて取得
+        $attendances = Attendance::with('rests')
+            ->where('user_id', $user_id)
+            ->whereYear('work_date', $currentMonth->year)
+            ->whereMonth('work_date', $currentMonth->month)
+            ->orderBy('work_date', 'asc')
+            ->get();
+
+        // 4. 各レコードの時間計算（休憩合計・勤務合計）
+        foreach ($attendances as $attendance) {
+            $totalRestSeconds = 0;
+            foreach ($attendance->rests as $rest) {
+                if ($rest->break_start && $rest->break_end) {
+                    $totalRestSeconds += strtotime($rest->break_end) - strtotime($rest->break_start);
+                }
+            }
+            $attendance->total_rest_time = gmdate('H:i:s', $totalRestSeconds);
+
+            if ($attendance->clock_in && $attendance->clock_out) {
+                $staySeconds = strtotime($attendance->clock_out) - strtotime($attendance->clock_in);
+                $workSeconds = $staySeconds - $totalRestSeconds;
+                $attendance->total_work_time = gmdate('H:i:s', max(0, $workSeconds));
+            } else {
+                $attendance->total_work_time = '00:00:00';
+            }
+        }
+
+        // 5. 管理者用のビュー（または共通の attendance_list）を返す
+        return view('attendance_list', [
+            'targetUser'   => $targetUser,
+            'attendances'  => $attendances,
+            'currentMonth' => $currentMonth,
+            'prevDate'     => $prevDate,
+            'nextDate'     => $nextDate,
+            'userId'       => $user_id,
+        ]);
+    }
+
 
     // CSVエクスポート処理
     public function export(Request $request)
@@ -367,5 +447,59 @@ class AttendanceController extends Controller
             'prevDate'    => $prevDate,                    // Bladeでエラーになっていた変数
             'nextDate'    => $nextDate,                    // 翌日用
         ]);
+    }
+
+    public function showEdit($id)
+    {
+        // 1. 現在の勤怠データと休憩データを取得
+        $attendance = Attendance::with(['user', 'rests'])->findOrFail($id);
+
+        // 2. この勤怠に関連する「修正申請」を取得（もしあれば）
+        // 紐づく休憩の修正申請（restCorrections）も一緒に読み込む
+        $correction = AttendanceCorrection::with('restCorrections')
+            ->where('attendance_id', $id)
+            ->first();
+
+        // 3. Bladeでループに使用している $rests 変数を用意
+        // 修正申請がある場合は申請中のデータを、なければ現在の休憩データを渡す
+        $rests = $correction && $correction->restCorrections->isNotEmpty()
+            ? $correction->restCorrections
+            : $attendance->rests;
+
+        return view('attendance_detail', [
+            'attendance' => $attendance,
+            'correction' => $correction,
+            'rests'      => $rests,
+        ]);
+    }
+
+
+    public function update(AttendanceRequest $request, $id)
+    {
+        $attendance = Attendance::findOrFail($id);
+
+        DB::transaction(function () use ($request, $attendance) {
+            // 勤怠データの更新
+            $attendance->update([
+                'clock_in' => $request->clock_in ? $attendance->work_date . ' ' . $request->clock_in : null,
+                'clock_out' => $request->clock_out ? $attendance->work_date . ' ' . $request->clock_out : null,
+            ]);
+
+            // 休憩データの更新（既存のものを削除してから新しいものを追加）
+            $attendance->rests()->delete();
+            if ($request->has('rests')) {
+                foreach ($request->rests as $restData) {
+                    if (!empty($restData['start']) && !empty($restData['end'])) {
+                        Rest::create([
+                            'attendance_id' => $attendance->id,
+                            'break_start' => $attendance->work_date . ' ' . $restData['start'],
+                            'break_end' => $attendance->work_date . ' ' . $restData['end'],
+                        ]);
+                    }
+                }
+            }
+        });
+
+        return redirect()->route('admin.attendance.list')->with('success', '勤怠データを更新しました。');
     }
 }
