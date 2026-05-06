@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class AttendanceCorrection extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'attendance_id',
         'user_id',
@@ -16,6 +17,16 @@ class AttendanceCorrection extends Model
         'remarks',
         'status'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function attendance()
+    {
+        return $this->belongsTo(Attendance::class);
+    }
 
     public function restCorrections()
     {

@@ -5,6 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property string $total_rest_time
+ * @property string $total_work_time
+ */
+
 class Attendance extends Model
 {
     use HasFactory;
@@ -25,4 +30,5 @@ class Attendance extends Model
     {
         return $this->hasMany(Rest::class);
     }
+
 }

@@ -18,7 +18,7 @@ class AuthController extends Controller
     }
 
     //会員登録処理
-    public function RegisterPost(RegisterRequest $request)
+    public function registerPost(RegisterRequest $request)
     {
         $validated = $request->validated();
 
@@ -32,7 +32,7 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('attendance');
+        return redirect()->route('verification.notice');
     }
 
     //ログイン画面の表示
@@ -48,7 +48,13 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->intended('attendance');
+
+            // メール認証がまだの場合は、認証通知画面へリダイレクト
+            if (!$request->user()->hasVerifiedEmail()) {
+                return redirect()->route('verification.notice');
+            }
+
+            return redirect()->intended(route('attendance.state'));
         }
 
         return back()->withErrors([
@@ -58,10 +64,46 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        // ログアウトする前に、管理権限を持っているかチェック
+        $isAdmin = Auth::check() && Auth::user()->role === 'admin';
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        // 管理者だった場合は管理者ログインへ、それ以外は一般ログインへ
+        if ($isAdmin) {
+            return redirect()->route('admin.login');
+        }
+
         return redirect('/login');
+    }
+
+
+    // 管理者ログイン画面の表示
+    public function showAdminLoginForm()
+    {
+        return view('auth/admin_login'); // 作成したBladeを指定
+    }
+
+    // 管理者ログイン処理
+    public function adminLogin(LoginRequest $request)
+    {
+        $credentials = $request->only('email', 'password');
+
+        if (Auth::attempt($credentials)) {
+            if (Auth::user()->role === 'admin') {
+                $request->session()->regenerate();
+
+                // セッションにある「以前の遷移先」をクリアして、強制的にパスを指定する
+                $request->session()->forget('url.intended');
+                return redirect('/admin/attendance/list');
+            }
+
+            Auth::logout();
+            return back()->withErrors(['login_error' => '管理者以外のユーザーはログインできません。']);
+        }
+
+        return back()->withErrors(['login_error' => 'ログイン情報が登録されていません。']);
     }
 }

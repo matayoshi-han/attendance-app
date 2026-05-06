@@ -21,7 +21,9 @@
 .date-year,
 .date-monthday,
 .time-input-field,
-.range-separator {
+.time-display-text,
+.range-separator,
+.remarks-display-text {
     font-size: 18px !important;
     font-weight: 700 !important;
     color: #000 !important;
@@ -30,19 +32,30 @@
 .name-display,
 .date-year,
 .date-monthday,
-.time-input-field {
+.time-input-field,
+.time-display-text {
     width: 200px !important;
-    display: inline-block !important;
-    text-align: center !important;
+    display: inline-flex !important;
     flex-shrink: 0;
 }
 
+.name-display,
+.date-year,
+.date-monthday,
+.time-display-text {
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 12px;
+    box-sizing: border-box;
+}
+
 .time-input-field {
-    padding: 8px 0;
+    text-align: center;
     border: 1px solid #C8C8C8;
     border-radius: 4px;
     background-color: #fff;
     outline: none;
+    padding: 8px 12px;
     box-sizing: border-box;
 }
 
@@ -63,15 +76,24 @@
     text-align: center;
 }
 
-.remarks-area {
+.remarks-area,
+.remarks-display-text {
     width: 100%;
     max-width: 600px;
-    padding: 10px;
+    padding: 10px 12px;
+    box-sizing: border-box;
+    line-height: 1.6;
+}
+
+.remarks-area {
     border: 1px solid #C8C8C8;
     border-radius: 4px;
-    font-size: 18px;
-    font-weight: 700;
     resize: vertical;
+}
+
+.remarks-display-text {
+    min-height: 100px;
+    white-space: pre-wrap;
 }
 
 .form-actions {
@@ -82,7 +104,8 @@
 }
 
 .attendance-button,
-.status-badge {
+.status-badge,
+.approved-label {
     width: clamp(130px, 30%, 250px);
     height: 50px;
     display: flex;
@@ -105,14 +128,20 @@
     transition: all 0.3s ease;
 }
 
-.status-badge {
-    color: #696969;
-    background-color: #C8C8C8;
-}
-
 .attendance-button:hover {
     background-color: #333;
     transform: translateY(-2px);
+}
+
+.approved-label {
+    background-color: #696969 !important;
+    color: #fff;
+    cursor: default;
+}
+
+.status-badge {
+    color: #696969;
+    background-color: #C8C8C8;
 }
 
 .lock-message {
@@ -122,6 +151,16 @@
     margin: 0;
     padding: 15px 0;
     text-align: right;
+}
+
+.error-message {
+    margin-top: 8px;
+    color: #ff0000;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: left;
+    min-height: 20px;
+    display: block;
 }
 
 @media screen and (max-width: 480px) {

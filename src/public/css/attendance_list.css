@@ -1,4 +1,3 @@
-/* 全体の背景（打刻画面と統一） */
 html {
     background-color: #F0EFF2;
 }
@@ -21,7 +20,6 @@ html {
     line-height: 1.1;
 }
 
-/* 月切り替えナビゲーション */
 .month-navigation {
     display: flex;
     align-items: center;
@@ -37,7 +35,6 @@ html {
     display: flex;
     align-items: center;
     gap: 8px;
-    /* 画像と文字の間隔 */
     font-size: 16px;
     font-weight: 700;
     color: #000;
@@ -49,7 +46,6 @@ html {
     opacity: 0.6;
 }
 
-/* 矢印アイコンのサイズ調整 */
 .arrow-left,
 .arrow-right {
     width: 20px;
@@ -57,7 +53,6 @@ html {
     object-fit: contain;
 }
 
-/* 翌月の矢印だけ180度回転させて右向きにする */
 .arrow-right {
     transform: rotate(180deg);
 }
@@ -79,8 +74,6 @@ html {
     object-fit: contain;
 }
 
-/* --- テーブルデザインの変更点 --- */
-
 .table {
     width: 100%;
     background-color: #fff;
@@ -97,34 +90,27 @@ html {
     font-size: 18px;
     font-weight: 700;
     text-align: center;
-    /* デフォルトのborderは一度リセット */
     border: none;
 }
 
-/* ヘッダーの調整 */
 .table thead th {
     color: #737373;
     background-color: #fff;
     border-bottom: 2px solid #E1E1E1;
-    /* ヘッダー下の太めの線 */
 }
 
-/* 各行の間に薄い線を入れる */
 .table tbody tr {
     border-bottom: 2px solid #E1E1E1;
 }
 
-/* 最後の行の線は消して角丸を維持 */
 .table tbody tr:last-child {
     border-bottom: none;
 }
 
-/* データ行の文字色 */
 .table td {
     color: #737373;
 }
 
-/* 詳細ボタン（文字色を黒にし、下線を消して調整） */
 .btn-primary {
     display: inline-block;
     color: #000000 !important;
@@ -138,4 +124,37 @@ html {
 
 .btn-primary:hover {
     opacity: 0.6;
+}
+
+.csv-export {
+    margin-top: 30px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.csv-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 160px;
+    height: 45px;
+    background-color: #000000;
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 10px;
+    border: 2px solid #E1E1E1;
+    /* テーブルの線と色を統一 */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    /* ナビゲーションと統一 */
+    transition: all 0.3s ease;
+}
+
+.csv-btn:hover {
+    background-color: #000;
+    color: #fff;
+    border-color: #000;
+    transform: translateY(-2px);
+    /* 少し浮き上がる演出 */
 }

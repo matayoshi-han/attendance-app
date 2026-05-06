@@ -9,7 +9,6 @@ a {
 }
 
 .header__inner {
-    /* 左右の余白だけ可変にし、最大値を制限 */
     margin: 0;
     padding: 10px 20px;
 }
@@ -26,7 +25,6 @@ a {
 }
 
 .header__logo img {
-    /* ロゴのサイズは固定、または最小・最大を指定 */
     width: 200px;
     height: auto;
     display: block;
@@ -35,7 +33,6 @@ a {
 .header-nav {
     display: flex;
     align-items: center;
-    /* 間隔を画面幅に合わせる(ここだけclampを残す) */
     gap: clamp(20px, 4vw, 50px);
     margin: 0;
     padding: 0;
@@ -59,7 +56,6 @@ a {
     opacity: 0.7;
 }
 
-/* ログイン/ログアウトなどの強調ボタン */
 .header-nav__link.sale {
     background-color: #ffffff;
     color: #000000;
@@ -68,7 +64,6 @@ a {
     display: inline-block;
 }
 
-/* レスポンシブ：タブレット以下 */
 @media screen and (max-width: 768px) {
     .header__inner {
         padding: 15px 20px;
@@ -76,17 +71,14 @@ a {
 
     .header__logo img {
         width: 150px;
-        /* 少し小さく */
     }
 
     .header-nav__link,
     .header-nav__button {
         font-size: 16px;
-        /* スマホでも視認性を保つ最小サイズ */
     }
 }
 
-/* レスポンシブ：スマホ（超小型） */
 @media screen and (max-width: 480px) {
     .header-nav {
         gap: 15px;

@@ -6,12 +6,18 @@
 
 @section('content')
 <div class="container">
-    <h1 class="title">勤怠一覧</h1>
+    <h1 class="title">
+        @if(Auth::user()->role === 'admin' && isset($targetUser))
+        {{ $targetUser->name }}の勤怠一覧
+        @else
+        勤怠一覧
+        @endif
+    </h1>
 
     <div class="month-navigation">
-        <a href="{{ route('attendance.list', ['month' => $prevMonth]) }}" class="nav-btn"><img src="{{ asset('images/arrow.png') }}" alt="前月" class="arrow-left"><span>前月</span></a>
+        <a href="{{ route('attendance.list', ['month' => $prevMonth, 'user_id' => $userId]) }}" class="nav-btn"><img src="{{ asset('images/arrow.png') }}" alt="前月" class="arrow-left"><span>前月</span></a>
         <span class="month-display"><img src="{{ asset('images/calendar-icon.png') }}" alt="カレンダー" class="calendar-icon">{{ $currentMonth->format('Y/m') }}</span>
-        <a href="{{ route('attendance.list', ['month' => $nextMonth]) }}" class="nav-btn"><span>翌月</span><img src="{{ asset('images/arrow.png') }}" alt="次月" class="arrow-right"></a>
+        <a href="{{ route('attendance.list', ['month' => $nextMonth, 'user_id' => $userId]) }}" class="nav-btn"><span>翌月</span><img src="{{ asset('images/arrow.png') }}" alt="次月" class="arrow-right"></a>
     </div>
 
     <table class="table">
@@ -45,5 +51,12 @@
             @endforeach
         </tbody>
     </table>
+    @if(Auth::user()->role === 'admin')
+    <div class="csv-export">
+        <a href="{{ route('attendance.export', ['month' => $currentMonth->format('Y-m'), 'user_id' => $userId]) }}" class="csv-btn">
+            CSV出力
+        </a>
+    </div>
+    @endif
 </div>
 @endsection

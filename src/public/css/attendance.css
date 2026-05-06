@@ -4,7 +4,6 @@ html {
 
 body {
     margin: 0;
-    /* 余計な隙間を消す */
 }
 
 main {
@@ -18,7 +17,6 @@ main {
     text-align: center;
 }
 
-/* 勤務状態 */
 .work-status {
     display: inline-block;
     width: 100px;
@@ -31,7 +29,6 @@ main {
     margin-bottom: 10px;
 }
 
-/* 日付 */
 .datetime {
     font-size: 40px;
     font-weight: 400;
@@ -39,7 +36,6 @@ main {
     margin-bottom: 5px;
 }
 
-/* 時計 */
 .clock {
     font-size: 80px;
     font-weight: 700;
@@ -48,7 +44,6 @@ main {
     letter-spacing: 0.05em;
 }
 
-/* ボタン */
 .attendance-button {
     background-color: #000000;
     color: white;
@@ -65,8 +60,6 @@ main {
     transform: translateY(-2px);
 }
 
-
-/* ボタンを横に並べるためのコンテナ */
 .button-group {
     margin-top: 20px;
 }

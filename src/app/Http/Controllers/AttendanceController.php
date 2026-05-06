@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AttendanceRequest;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\Rest;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Models\AttendanceCorrection;
 use App\Models\RestCorrection;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AttendanceController extends Controller
 {
@@ -114,13 +118,17 @@ class AttendanceController extends Controller
         // クエリパラメータから月を取得、なければ今月
         $monthParam = $request->query('month', now()->format('Y-m'));
 
+        // 管理者でuser_idが指定されている場合はその人を、そうでなければ自分を対象にする
+        $userId = $request->input('user_id') ?? Auth::id();
+        $targetUser = User::find($userId);
+
         // Carbonインスタンスを作成
         $currentMonth = \Carbon\Carbon::parse($monthParam);
         $prevMonth = $currentMonth->copy()->subMonth()->format('Y-m');
         $nextMonth = $currentMonth->copy()->addMonth()->format('Y-m');
 
         $attendances = Attendance::with('rests')
-            ->where('user_id', Auth::id())
+            ->where('user_id', $userId)
             ->where('work_date', 'like', $currentMonth->format('Y-m') . '%')
             ->orderBy('work_date', 'asc')
             ->get();
@@ -144,26 +152,62 @@ class AttendanceController extends Controller
             }
         }
 
-        return view('attendance_list', compact('attendances', 'currentMonth', 'prevMonth', 'nextMonth'));
+        return view('attendance_list', compact('attendances', 'currentMonth', 'prevMonth', 'nextMonth', 'userId'));
     }
+
+    // CSVエクスポート処理
+    public function export(Request $request)
+    {
+        $userId = $request->query('user_id');
+        $month = $request->query('month');
+
+        // 指定された月とユーザーのデータを取得
+        $attendances = Attendance::with('rests')
+            ->where('user_id', $userId)
+            ->where('work_date', 'like', "$month%")
+            ->orderBy('work_date', 'asc')
+            ->get();
+
+        return new StreamedResponse(function () use ($attendances) {
+            $stream = fopen('php://output', 'w');
+
+            // 文字化け対策（UTF-8 → Shift_JIS）
+            stream_filter_append($stream, 'convert.iconv.utf-8/cp932//TRANSLIT');
+
+            // ヘッダー
+            fputcsv($stream, ['日付', '出勤', '退勤', '休憩時間', '合計勤務時間']);
+
+            foreach ($attendances as $row) {
+                // ここで indexList と同じ時間計算ロジックを入れる
+                fputcsv($stream, [
+                    $row->work_date,
+                    $row->clock_in ? date('H:i', strtotime($row->clock_in)) : '',
+                    $row->clock_out ? date('H:i', strtotime($row->clock_out)) : '',
+                    // 合計休憩・勤務時間を計算して入れる
+                ]);
+            }
+            fclose($stream);
+        }, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=attendance_{$month}.csv",
+        ]);
+    }
+
+
 
     // 詳細画面の表示
     public function show($id)
     {
         $attendance = Attendance::with(['user', 'rests'])->findOrFail($id);
 
-        // 承認待ちの修正申請があるか確認
+        // statusの制限を外し、最新の修正申請を取得する
         $correction = AttendanceCorrection::with('restCorrections')
             ->where('attendance_id', $id)
-            ->where('status', 0) // 承認待ち
+            ->latest() // 最新の申請を1件
             ->first();
 
-        // 修正申請があればそれを、なければ現在の勤怠データを表示用にセット
-        $displayData = $correction ?: $attendance;
-
-        // 休憩データの整理
-        // 承認待ちがあれば修正後の休憩を、なければ今の休憩を取得
-        if ($correction) {
+        // 承認待ち(0) または 承認済み(1) のデータがあれば、それを表示用に使う
+        if ($correction && ($correction->status == 0 || $correction->status == 1)) {
             $rests = $correction->restCorrections->map(function ($rc) {
                 return (object)[
                     'break_start' => $rc->updated_break_start,
@@ -174,7 +218,6 @@ class AttendanceController extends Controller
             $rests = $attendance->rests;
         }
 
-        // 新規休憩入力用の空枠を1つ追加
         if ($rests->isEmpty() || !is_null($rests->last()->break_end)) {
             $rests->push((object)['break_start' => null, 'break_end' => null]);
         }
@@ -182,44 +225,64 @@ class AttendanceController extends Controller
         return view('attendance_detail', compact('attendance', 'rests', 'correction'));
     }
 
-    // 修正申請の保存
-    public function storeCorrection(Request $request, $id)
+
+    // 修正申請
+    public function storeCorrection(AttendanceRequest $request, $id)
     {
-        // バリデーション
-        $request->validate([
-            'remarks' => 'required|string',
-        ]);
+        $attendance = Attendance::findOrFail($id);
 
-        DB::transaction(function () use ($request, $id) {
-            $attendance = Attendance::findOrFail($id);
+        // 管理者の場合
+        if (Auth::user()->role === 'admin') {
+            DB::transaction(function () use ($request, $attendance) {
+                // 直接 attendances テーブルを更新
+                $attendance->update([
+                    'clock_in' => $request->clock_in ? $attendance->work_date . ' ' . $request->clock_in : null,
+                    'clock_out' => $request->clock_out ? $attendance->work_date . ' ' . $request->clock_out : null,
+                ]);
 
-            // 1. 修正申請メインテーブルの保存
-            $correction = AttendanceCorrection::create([
-                'attendance_id' => $attendance->id,
-                'user_id' => Auth::id(),
-                'updated_clock_in' => $request->clock_in ? $attendance->work_date . ' ' . $request->clock_in : null,
-                'updated_clock_out' => $request->clock_out ? $attendance->work_date . ' ' . $request->clock_out : null,
-                'remarks' => $request->remarks,
-                'status' => 0, // 承認待ち
-            ]);
-
-            // 2. 休憩修正データの保存
-            if ($request->has('rests')) {
-                foreach ($request->rests as $restData) {
-                    // 開始・終了どちらか入力があれば保存
-                    if ($restData['start'] || $restData['end']) {
-                        RestCorrection::create([
-                            'attendance_correction_id' => $correction->id,
-                            'updated_break_start' => $restData['start'] ? $attendance->work_date . ' ' . $restData['start'] : null,
-                            'updated_break_end' => $restData['end'] ? $attendance->work_date . ' ' . $restData['end'] : null,
-                        ]);
+                // 休憩データも一度消して再作成（即時反映）
+                $attendance->rests()->delete();
+                if ($request->has('rests')) {
+                    foreach ($request->rests as $restData) {
+                        if (!empty($restData['start']) && !empty($restData['end'])) {
+                            Rest::create([
+                                'attendance_id' => $attendance->id,
+                                'break_start' => $attendance->work_date . ' ' . $restData['start'],
+                                'break_end' => $attendance->work_date . ' ' . $restData['end'],
+                            ]);
+                        }
                     }
                 }
-            }
-        });
+            });
+            return redirect()->back()->with('success', '勤怠データを更新しました。');
+        } else {
+            DB::transaction(function () use ($request, $attendance) {
+                // 1. 修正申請本体の保存
+                $correction = AttendanceCorrection::create([
+                    'attendance_id' => $attendance->id,
+                    'user_id' => Auth::id(),
+                    'updated_clock_in' => $request->clock_in ? $attendance->work_date . ' ' . $request->clock_in : null,
+                    'updated_clock_out' => $request->clock_out ? $attendance->work_date . ' ' . $request->clock_out : null,
+                    'remarks' => $request->remarks,
+                    'status' => 0, // 承認待ち
+                ]);
 
-        return redirect()->route('attendance.list')->with('success', '修正申請を送信しました。');
+                // 2. 休憩時間の修正案も保存する
+                if ($request->has('rests')) {
+                    foreach ($request->rests as $restData) {
+                        if (!empty($restData['start']) && !empty($restData['end'])) {
+                            $correction->restCorrections()->create([
+                                'updated_break_start' => $attendance->work_date . ' ' . $restData['start'],
+                                'updated_break_end' => $attendance->work_date . ' ' . $restData['end'],
+                            ]);
+                        }
+                    }
+                }
+            });
+            return redirect()->back()->with('success', '修正申請を送信しました。');
+        }
     }
+
 
     public function correctionList(Request $request)
     {
@@ -242,10 +305,10 @@ class AttendanceController extends Controller
     // 修正申請の承認・却下（管理者用）
     public function approveCorrection(Request $request, $id)
     {
-        // $id は attendance_corrections の ID
         $correction = AttendanceCorrection::with('restCorrections')->findOrFail($id);
 
         DB::transaction(function () use ($correction, $request) {
+            // 詳細画面から送られる input (name="action") の値で分岐
             if ($request->action === 'approve') {
                 // 1. 元の勤怠データを上書き
                 $attendance = Attendance::findOrFail($correction->attendance_id);
@@ -254,8 +317,8 @@ class AttendanceController extends Controller
                     'clock_out' => $correction->updated_clock_out,
                 ]);
 
-                // 2. 元の休憩データを一度消して、修正後の内容で再作成
-                Rest::where('attendance_id', $attendance->id)->delete();
+                // 2. 元の休憩データを削除し、修正後の内容で再作成
+                $attendance->rests()->delete();
                 foreach ($correction->restCorrections as $rc) {
                     Rest::create([
                         'attendance_id' => $attendance->id,
@@ -266,10 +329,43 @@ class AttendanceController extends Controller
 
                 $correction->update(['status' => 1]); // 承認済み
             } else {
+                // 却下の場合
                 $correction->update(['status' => 2]); // 却下
             }
         });
 
         return redirect()->route('correction.list')->with('success', '処理が完了しました。');
+    }
+
+
+    public function userList()
+    {
+        // 一般ユーザー（roleがuserのもの）を一覧で取得
+        $users = \App\Models\User::where('role', 'user')->orderBy('id', 'asc')->get();
+
+        return view('admin_user_list', compact('users'));
+    }
+
+    public function adminIndexList(Request $request)
+    {
+        // 1. 表示したい日付を取得（なければ今日）
+        $displayDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
+
+        // 2. 前日・翌日の日付を計算して変数に入れる
+        $prevDate = $displayDate->copy()->subDay()->format('Y-m-d');
+        $nextDate = $displayDate->copy()->addDay()->format('Y-m-d');
+
+        // 3. その日付に一致する勤怠データを取得
+        $attendances = Attendance::with('user')
+            ->whereDate('work_date', $displayDate) // 日付で絞り込み
+            ->paginate(10);
+
+        // 4. すべての変数を view に渡す
+        return view('admin_attendance_list', [
+            'attendances' => $attendances,
+            'currentDate' => $displayDate->format('Y-m-d'), // 現在表示中の日
+            'prevDate'    => $prevDate,                    // Bladeでエラーになっていた変数
+            'nextDate'    => $nextDate,                    // 翌日用
+        ]);
     }
 }

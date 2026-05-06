@@ -15,14 +15,26 @@
     <header class="header">
         <div class="header__inner">
             <div class="header-utilities">
-                <a class="header__logo" href="/attendance">
+                <a class="header__logo" href="{{ Auth::check() && Auth::user()->role === 'admin' ? route('admin.attendance.list') : '/attendance' }}">
                     <img src="{{ asset('images/COACHTECHヘッダーロゴ.png') }}" alt="ロゴ">
                 </a>
                 @if (!Route::is(['login', 'register', 'verification.notice']))
                 <nav>
                     <ul class="header-nav">
                         @if (Auth::check())
-                        @if (isset($status) && $status === '退勤済')
+                        @if (Auth::user()->role === 'admin')
+                        {{-- 管理者専用メニュー --}}
+                        <li class="header-nav__item">
+                            <a class="header-nav__link" href="/admin/attendance/list">勤怠一覧</a>
+                        </li>
+                        <li class="header-nav__item">
+                            <a class="header-nav__link" href="/admin/staff">スタッフ一覧</a>
+                        </li>
+                        <li class="header-nav__item">
+                            <a class="header-nav__link" href="/stamp_correction_request/list">申請一覧</a>
+                        </li>
+                        @elseif (isset($status) && $status === '退勤済')
+                        {{-- 一般ユーザー：退勤済 --}}
                         <li class="header-nav__item">
                             <a class="header-nav__link" href="/attendance/list">今月の出勤一覧</a>
                         </li>
@@ -30,6 +42,7 @@
                             <a class="header-nav__link" href="/stamp_correction_request/list">申請一覧</a>
                         </li>
                         @else
+                        {{-- 一般ユーザー：通常時 --}}
                         <li class="header-nav__item">
                             <a class="header-nav__link" href="/attendance">勤怠</a>
                         </li>

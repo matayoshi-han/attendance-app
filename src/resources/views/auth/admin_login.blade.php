@@ -7,9 +7,9 @@
 @section('content')
 <div class="login-form__content">
     <div class="login-form__heading">
-        <h1>ログイン</h1>
+        <h1>管理者ログイン</h1>
     </div>
-    <form class="form" action="{{ route('login.post') }}" method="POST">
+    <form class="form" action="{{ route('admin.login.post') }}" method="POST">
         @csrf
         <div class="form__group">
             <div class="form__group-title">
@@ -47,11 +47,8 @@
             </div>
         </div>
         <div class="form__button">
-            <button class="form__button-submit" type="submit">ログイン</button>
+            <button class="form__button-submit" type="submit">管理者ログイン</button>
         </div>
     </form>
-    <div class="register__link">
-        <a class="register__button-submit" href="/register">会員登録の方はこちら</a>
-    </div>
 </div>
 @endsection
